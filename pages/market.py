@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import yfinance as yf
+from utils.appwrite_client import follow_stock
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -214,6 +215,9 @@ def show_page():
         chart_type = st.sidebar.selectbox("Select Chart Type", ["Candlestick", "Line", "Mountain"], index=0)
 
         try:
+            
+            selected_name = st.session_state.selected_name
+            user_id = st.session_state.user_id
             stock = yf.Ticker(selected_ticker)
             info = stock.info
 
@@ -232,6 +236,16 @@ def show_page():
             if fig:
                 st.plotly_chart(fig)
 
+            if st.button("Follow Stock"):
+    # Call the function to follow the stock and add to the Appwrite database
+                response = follow_stock(user_id, selected_name, selected_ticker)
+                
+                if response:
+                    st.success("Stock followed successfully!")
+                else:
+                    st.error("Error following stock.")
+                    st.write(response)
+
             # Company About Section
             with st.expander("About"):
                 st.markdown(
@@ -245,28 +259,23 @@ def show_page():
                     """
                 )
 
-            # Financial Data Sections
+            # Financial Data Sections (same as before)
             st.markdown("### Financial Data")
-
-            # Income Statement
             income_statement = stock.financials
             if not income_statement.empty:
                 st.subheader("Income Statement")
                 st.dataframe(income_statement)
 
-            # Balance Sheet
             balance_sheet = stock.balance_sheet
             if not balance_sheet.empty:
                 st.subheader("Balance Sheet")
                 st.dataframe(balance_sheet)
 
-            # Cash Flow
             cash_flow = stock.cashflow
             if not cash_flow.empty:
                 st.subheader("Cash Flow")
                 st.dataframe(cash_flow)
 
-            # Recommendations and Earnings Estimate
             st.markdown("### Stock Recommendations & Earnings Estimate")
             col1, col2 = st.columns(2)
 
@@ -282,7 +291,6 @@ def show_page():
                     st.subheader("Earnings Estimate")
                     st.dataframe(earnings_estimate)
 
-            # Analyst Price Targets
             analyst_targets = stock.analyst_price_targets
             if isinstance(analyst_targets, pd.DataFrame) and not analyst_targets.empty:
                 st.subheader("Analyst Price Targets")

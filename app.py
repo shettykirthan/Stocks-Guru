@@ -1,8 +1,6 @@
 import streamlit as st
+from utils.appwrite_client import account  # Ensure this imports your Appwrite client correctly
 import uuid
-from utils.appwrite_client import account
-
-
 
 # Now import your modules for pages
 from pages import google, market, userdashboard 
@@ -20,7 +18,6 @@ with st.sidebar:
                 "Market", 
                 "Google News", 
                 "Dashboard", 
-                
             ]
         )
     else:
@@ -42,9 +39,9 @@ def user_auth_page():
             try:
                 # Email and password-based session creation using Appwrite's login API
                 session = account.create_email_password_session(email=email, password=password)
-                # Store the session details in session state
+                # Get the $id from the session response
+                st.session_state.user_id = session['userId']  # Use the existing user ID from the session
                 st.session_state.logged_in = True
-                st.session_state.user_id = session["$id"]
                 st.session_state.email = email
                 # Add a username (you might want to fetch this from your user profile)
                 st.session_state.username = email.split('@')[0]  # Use part of email as username
@@ -69,11 +66,8 @@ def user_auth_page():
                 st.error("Passwords do not match.")
                 return
             try:
-                # Generate a random user_id using uuid
-                user_id = str(uuid.uuid4())  # Generate a random UUID as user_id
-                st.session_state.username = username
-                # Create user account via Appwrite's signup API with random user_id
-                account.create(user_id=user_id, name=username, email=new_email, password=new_password)
+                # Create user account via Appwrite's signup API
+                account.create(name=username, email=new_email, password=new_password)
                 st.success("Account created successfully! Please log in.")
             except Exception as e:
                 st.error(f"Signup failed: {e}")
