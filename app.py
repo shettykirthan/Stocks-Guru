@@ -5,7 +5,7 @@ from utils.appwrite_client import account
 
 
 # Now import your modules for pages
-from pages import google, market, userdashboard
+from pages import google, market, userdashboard 
 
 # Sidebar for navigation
 with st.sidebar:
@@ -18,8 +18,9 @@ with st.sidebar:
             "Choose a page", 
             [
                 "Market", 
-                "Google", 
+                "Google News", 
                 "Dashboard", 
+                
             ]
         )
     else:
@@ -87,7 +88,7 @@ elif page == "Market":
     else:
         st.error("You need to log in first!")
     
-elif page == "Google":
+elif page == "Google News":
     if "logged_in" in st.session_state and st.session_state.logged_in:
         google.show_page()  # Show Google page if logged in
     else:
