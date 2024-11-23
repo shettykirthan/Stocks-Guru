@@ -164,8 +164,8 @@ def show_page():
             # Process selection
             if selected_stock and selected_stock != "":
                 selected_row = stocks_df[stocks_df['Display'] == selected_stock].iloc[0]
-                st.session_state.selected_ticker = selected_row['Ticker']
-                st.session_state.selected_name = selected_row['Name']
+                st.session_state.selected_stock_ticker = selected_row['Ticker']
+                st.session_state.selected_stock_name = selected_row['Name']
                 st.rerun()
         else:
             st.info("No stock data available.")
@@ -196,8 +196,8 @@ def show_page():
                             
                             # Button styled to look like the whole container is clickable
                             if st.button(f"Select {ticker}", key=ticker):
-                                st.session_state.selected_ticker = ticker
-                                st.session_state.selected_name = name
+                                st.session_state.selected_stock_ticker = ticker
+                                st.session_state.selected_stock_name = name
                                 st.rerun()
         else:
             st.info("No stock data available.")
@@ -206,39 +206,39 @@ def show_page():
     def stock_page():
         # Back button to return to front page
         if st.sidebar.button("Back to Stock List"):
-            del st.session_state.selected_ticker
+            del st.session_state.selected_stock_ticker
             st.rerun()
 
         st.sidebar.header("Stock Data")
-        selected_ticker = st.session_state.get('selected_ticker', 'AAPL')
+        selected_stock_ticker = st.session_state.get('selected_stock_ticker', 'AAPL')
         timespan = st.sidebar.selectbox("Select Time Span", ["1y", "5y", "10y", "Max"])
         chart_type = st.sidebar.selectbox("Select Chart Type", ["Candlestick", "Line", "Mountain"], index=0)
 
         try:
             
-            selected_name = st.session_state.selected_name
+            selected_stock_name = st.session_state.selected_stock_name
             user_id = st.session_state.user_id
-            stock = yf.Ticker(selected_ticker)
+            stock = yf.Ticker(selected_stock_ticker)
             info = stock.info
 
             if not info:
                 st.error("No information available for the selected stock.")
                 return
 
-            st.markdown(f"### {info.get('longName', selected_ticker)} Stock Information")
+            st.markdown(f"### {info.get('longName', selected_stock_ticker)} Stock Information")
             
             col1, col2, col3 = st.columns(3)
             col1.metric("Market Cap", f"${info.get('marketCap', 'N/A'):,}")
             col2.metric("PE Ratio", round(info.get('trailingPE', 0), 2))
             col3.metric("52 Week High", f"${info.get('fiftyTwoWeekHigh', 'N/A')}")
 
-            fig = plot_stock(selected_ticker, timespan, chart_type)
+            fig = plot_stock(selected_stock_ticker, timespan, chart_type)
             if fig:
                 st.plotly_chart(fig)
 
             if st.button("Follow Stock"):
     # Call the function to follow the stock and add to the Appwrite database
-                response = follow_stock(user_id, selected_name, selected_ticker)
+                response = follow_stock(user_id, selected_stock_name, selected_stock_ticker)
                 
                 if response:
                     st.success("Stock followed successfully!")
@@ -382,7 +382,7 @@ def show_page():
             except Exception as e:
                 st.exception(f"An error occurred: {e}")
     def show_page():
-        if "selected_ticker" in st.session_state:
+        if "selected_stock_ticker" in st.session_state:
             stock_page()
         else:
             front_page()

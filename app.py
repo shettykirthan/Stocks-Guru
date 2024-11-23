@@ -3,7 +3,7 @@ from utils.appwrite_client import account  # Ensure this imports your Appwrite c
 import uuid
 
 # Now import your modules for pages
-from pages import google, market, userdashboard 
+from pages import google, userdashboard ,market
 
 # Sidebar for navigation
 with st.sidebar:
